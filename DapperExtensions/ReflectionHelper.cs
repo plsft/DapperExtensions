@@ -2,6 +2,7 @@
 using DapperExtensions.Mapper;
 using DapperExtensions.Sql;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -13,27 +14,28 @@ namespace DapperExtensions
 {
     public static class ReflectionHelper
     {
-        private static readonly List<Type> _simpleTypes = new List<Type>
-                               {
-                                   typeof(byte),
-                                   typeof(sbyte),
-                                   typeof(short),
-                                   typeof(ushort),
-                                   typeof(int),
-                                   typeof(uint),
-                                   typeof(long),
-                                   typeof(ulong),
-                                   typeof(float),
-                                   typeof(double),
-                                   typeof(decimal),
-                                   typeof(bool),
-                                   typeof(string),
-                                   typeof(char),
-                                   typeof(Guid),
-                                   typeof(DateTime),
-                                   typeof(DateTimeOffset),
-                                   typeof(byte[])
-                               };
+        private static readonly ConcurrentDictionary<(Type type, string propertyName), PropertyInfo> _propertyCache = new();
+        private static readonly List<Type> _simpleTypes = new()
+        {
+            typeof(byte),
+            typeof(sbyte),
+            typeof(short),
+            typeof(ushort),
+            typeof(int),
+            typeof(uint),
+            typeof(long),
+            typeof(ulong),
+            typeof(float),
+            typeof(double),
+            typeof(decimal),
+            typeof(bool),
+            typeof(string),
+            typeof(char),
+            typeof(Guid),
+            typeof(DateTime),
+            typeof(DateTimeOffset),
+            typeof(byte[])
+        };
 
         public static IList<PropertyInfo> GetNestedProperties<T>(string nestedProperties, char delimiter, out string propertyInfoName)
         {
@@ -74,12 +76,9 @@ namespace DapperExtensions
                             switch (expr.NodeType)
                             {
                                 case ExpressionType.New:
-                                    NewExpression newExpression = (NewExpression)expr;
-                                    IList<MemberInfo> members = newExpression.Members;
-                                    return members;
+                                    return ((NewExpression)expr).Members;
                                 case ExpressionType.Convert:
-                                    UnaryExpression unary = ((UnaryExpression)expr);
-                                    return unary;
+                                    return (UnaryExpression)expr;
                             }
                         }
 
@@ -88,8 +87,8 @@ namespace DapperExtensions
                         expr = ((UnaryExpression)expr).Operand;
                         break;
                     case ExpressionType.MemberAccess:
-                        MemberExpression memberExpression = (MemberExpression)expr;
-                        MemberInfo mi = memberExpression.Member;
+                        var memberExpression = (MemberExpression)expr;
+                        var mi = memberExpression.Member;
 
                         if (memberExpression.Expression is MemberExpression)
                         {
@@ -155,7 +154,7 @@ namespace DapperExtensions
 
         public static string GetParameterName(this IDictionary<string, object> parameters, string parameterName, char parameterPrefix)
         {
-            return string.Format("{0}{1}_{2}", parameterPrefix, parameterName, parameters.Count);
+            return $"{parameterPrefix}{parameterName}_{parameters.Count}";
         }
 
         public static string SetParameterName(this IDictionary<string, object> parameters, Parameter parameter, char parameterPrefix)
@@ -191,9 +190,8 @@ namespace DapperExtensions
 
         public static IList<BinaryExpression> GetBinaryExpressionsFromUnary(UnaryExpression expression)
         {
-            UnaryExpression unary = ((UnaryExpression)expression);
-            Expression operand = ((Expression)unary.Operand);
-            BinaryExpression binary = (BinaryExpression)operand;
+            var unary = (UnaryExpression)expression;
+            var binary = (BinaryExpression)unary.Operand;
             IList<BinaryExpression> lBinaries = new List<BinaryExpression>();
             IList<BinaryExpression> rBinaries = new List<BinaryExpression>();
 
@@ -226,7 +224,7 @@ namespace DapperExtensions
                 ExpressionType.LessThan => Comparator.LessThan,
                 ExpressionType.GreaterThanOrEqual => Comparator.GreaterThanOrEqual,
                 ExpressionType.LessThanOrEqual => Comparator.LessThanOrEqual,
-                _ => throw new ArgumentOutOfRangeException(string.Format("Comparator option is not valid for property {0} detected.", name)),
+                _ => throw new ArgumentOutOfRangeException($"Comparator option is not valid for property {name} detected."),
             };
         }
 
@@ -237,7 +235,7 @@ namespace DapperExtensions
 
         public static AssemblyBuilder CreateAssemblyBuilder(string assemblyName)
         {
-            AssemblyName name = new AssemblyName(assemblyName);
+            AssemblyName name = new(assemblyName);
             return CreateAssemblyBuilder(name);
         }
 
@@ -249,7 +247,7 @@ namespace DapperExtensions
 
         public static TypeBuilder CreateTypeBuilder(ModuleBuilder moduleBuilder, string typeName, Type baseType = null)
         {
-            string _typeName = string.Format("{0}{1}", typeName, DapperExtensions.GetNextGuid().ToString().Substring(0, 8));
+            string _typeName = $"{typeName}{DapperExtensions.GetNextGuid().ToString().Substring(0, 8)}";
             return moduleBuilder
                 .DefineType(_typeName, TypeAttributes.Public |
                               TypeAttributes.Class |
@@ -268,11 +266,7 @@ namespace DapperExtensions
             foreach (var property in properties)
                 typeBuilder.DefineProperty(property.Name, property.Attributes, property.PropertyType, null);
 
-#if NETSTANDARD2_0
-            return typeBuilder.CreateTypeInfo();
-#else
             return typeBuilder.CreateType();
-#endif
         }
 
         public static Type CreateMapType(TypeBuilder typeBuilder, Type entityType, Type extendedType)
@@ -310,24 +304,20 @@ namespace DapperExtensions
                     methodIl.Emit(OpCodes.Ret);
                 }
             }
-#if NETSTANDARD2_0
-            return typeBuilder.CreateTypeInfo();
-#else
             return typeBuilder.CreateType();
-#endif
         }
 
         public static Parameter GetParameter(Type entityType, ISqlGenerator sqlGenerator, string propertyName, object value)
         {
             IClassMapper map = sqlGenerator.Configuration.GetMap(entityType);
             if (map == null)
-                throw new NullReferenceException(String.Format("Map was not found for {0}", entityType));
+                throw new NullReferenceException($"Map was not found for {entityType}");
 
             var entityPropertyName = propertyName.Split('_').Last();
 
             IMemberMap propertyMap = map.Properties.SingleOrDefault(p => p.Name == entityPropertyName);
             if (propertyMap == null)
-                throw new NullReferenceException(String.Format("{0} was not found for {1}", entityPropertyName, entityType));
+                throw new NullReferenceException($"{entityPropertyName} was not found for {entityType}");
 
             return new Parameter
             {
@@ -337,20 +327,26 @@ namespace DapperExtensions
                 Precision = propertyMap.DbPrecision,
                 Scale = propertyMap.DbScale,
                 Size = propertyMap.DbSize,
-                Value = value is Func<object> ? (value as Func<object>).Invoke() : value,
+                Value = value is Func<object> func ? func.Invoke() : value,
                 Name = propertyName
             };
         }
 
         public static PropertyInfo GetPropertyInfo(Type type, string propertyName)
         {
-            if (!(type.GetProperties().SingleOrDefault(x => x.Name.Equals(propertyName, StringComparison.InvariantCultureIgnoreCase)) is PropertyInfo propertyInfo))
+            return _propertyCache.GetOrAdd((type, propertyName), key =>
             {
-                throw new System.Exception($"Property name '{propertyName}' not exists inside {type.FullName}. \n" +
-                    "Error on class: 'DapperPredicatesWrapper' - method: 'Sort'.");
-            }
-
-            return propertyInfo;
+                var propertyInfo = key.type.GetProperties()
+                    .SingleOrDefault(x => x.Name.Equals(key.propertyName, StringComparison.InvariantCultureIgnoreCase));
+                
+                if (propertyInfo == null)
+                {
+                    throw new Exception($"Property name '{key.propertyName}' not exists inside {key.type.FullName}. \n" +
+                        "Error on class: 'DapperPredicatesWrapper' - method: 'Sort'.");
+                }
+                
+                return propertyInfo;
+            });
         }
     }
 }

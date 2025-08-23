@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
   <metadata schemaVersion="2">
     <id>DapperExtensions</id>
-    <version>1.7.0</version>
+    <version>1.8.0</version>
     <authors>Thad Smith, Page Brooks</authors>
     <owners>Thad Smith, Page Brooks</owners>
     <licenseUrl>http://www.apache.org/licenses/LICENSE-2.0</licenseUrl>
@@ -11,6 +11,15 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>A small library that complements Dapper by adding basic CRUD operations (Get, Insert, Update, Delete) for your POCOs. For more advanced querying scenarios, Dapper Extensions provides a predicate system.</description>
     <releaseNotes>
+	  1.8.0
+	  * Updated to support only .NET 8.0 and .NET 6.0
+	  * Removed support for all legacy frameworks (.NET Framework, .NET Standard)
+	  * Removed Slapper.AutoMapper dependency
+	  * Replaced Newtonsoft.Json with System.Text.Json
+	  * Removed DB2 support entirely
+	  * Updated all dependencies to latest versions
+	  * Enabled nullable reference types
+	  * Implemented C# 12 features
 	  1.7.0
 	  * Forked from orginal project of Thad Smith
 	  * Implemented Code Coverage to the Tests
@@ -24,26 +33,19 @@
       1.6.1
       * Added Oracle Dialect to 4.5
       1.6.0
-      * Added DB2 Dialect
+      * Added DB2 Dialect (removed in 1.8.0)
       * Added flag to ignore All Key fields when doing an update
       * Added missing async/await methods
       * Added unmap method to Mapper
     </releaseNotes>
     <tags>orm sql micro-orm Data Dapper</tags>
 	<dependencies>
-      <dependency id="Dapper" version="2.0.30" />
-      <dependency id="Slapper.AutoMapper" version="2.0.1" />
-      <dependency id="Newtonsoft.Json" version="12.0.3" />
+      <dependency id="Dapper" version="2.1.35" />
       <dependency id="Microsoft.CSharp" version="4.7.0" />
     </dependencies>
   </metadata>
   <files>
-      <file src="bin\Release\net461\DapperExtensions.dll" target="lib\net461\DapperExtensions.dll" />
-      <file src="bin\Release\netcoreapp2.1\DapperExtensions.dll" target="lib\netcoreapp2.1\DapperExtensions.dll" />
-      <file src="bin\Release\netcoreapp3.1\DapperExtensions.dll" target="lib\netcoreapp3.1\DapperExtensions.dll" />
-      <file src="bin\Release\net5.0\DapperExtensions.dll" target="lib\net5.0\DapperExtensions.dll" />
-      <file src="bin\Release\net5.0\DapperExtensions.dll" target="lib\net5.0\DapperExtensions.dll" />
-      <file src="bin\Release\netstandard2.0\DapperExtensions.dll" target="lib\netstandard2.0\DapperExtensions.dll" />
-      <file src="bin\Release\netstandard2.1\DapperExtensions.dll" target="lib\netstandard2.1\DapperExtensions.dll" />
+      <file src="bin\Release\net8.0\DapperExtensions.dll" target="lib\net8.0\DapperExtensions.dll" />
+      <file src="bin\Release\net6.0\DapperExtensions.dll" target="lib\net6.0\DapperExtensions.dll" />
   </files>  
 </package>

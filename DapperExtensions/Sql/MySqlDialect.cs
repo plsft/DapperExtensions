@@ -9,15 +9,9 @@ namespace DapperExtensions.Sql
 {
     public class MySqlDialect : SqlDialectBase
     {
-        public override char OpenQuote
-        {
-            get { return '`'; }
-        }
+        public override char OpenQuote => '`';
 
-        public override char CloseQuote
-        {
-            get { return '`'; }
-        }
+        public override char CloseQuote => '`';
 
         public override string GetIdentitySql(string tableName)
         {
@@ -40,7 +34,7 @@ namespace DapperExtensions.Sql
             if (!IsSelectSql(sql))
                 throw new ArgumentException($"{nameof(sql)} must be a SELECT statement.", nameof(sql));
 
-            var result = string.Format("{0} LIMIT @maxResults OFFSET @firstResult", sql);
+            var result = $"{sql} LIMIT @maxResults OFFSET @firstResult";
             parameters.Add("@firstResult", firstResult);
             parameters.Add("@maxResults", maxResults);
             return result;

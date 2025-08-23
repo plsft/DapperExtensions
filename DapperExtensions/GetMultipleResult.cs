@@ -17,10 +17,7 @@ namespace DapperExtensions
             _reader = reader;
         }
 
-        public IEnumerable<T> Read<T>()
-        {
-            return _reader.Read<T>();
-        }
+        public IEnumerable<T> Read<T>() => _reader.Read<T>();
     }
 
     public class SequenceReaderResultReader : IMultipleResultReader
@@ -29,12 +26,12 @@ namespace DapperExtensions
 
         public SequenceReaderResultReader(IEnumerable<SqlMapper.GridReader> items)
         {
-            _items = new Queue<SqlMapper.GridReader>(items);
+            _items = new(items);
         }
 
         public IEnumerable<T> Read<T>()
         {
-            SqlMapper.GridReader reader = _items.Dequeue();
+            var reader = _items.Dequeue();
             return reader.Read<T>();
         }
     }

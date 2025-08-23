@@ -23,7 +23,7 @@ namespace DapperExtensions.Test.IntegrationTests.Async
                 List<Guid> list = new List<Guid>();
                 for (int i = 0; i < 1000; i++)
                 {
-                    Guid id = DapperAsyncExtensions.GetNextGuid().Result;
+                    Guid id = DapperAsyncExtensions.GetNextGuidAsync().Result;
                     Assert.IsFalse(list.Contains(id));
                     list.Add(id);
                 }

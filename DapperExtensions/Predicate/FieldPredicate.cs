@@ -84,14 +84,14 @@ namespace DapperExtensions.Predicate
         private string GetSql(ISqlGenerator sqlGenerator, IDictionary<string, object> parameters, string columnName, string parameterPropertyName, Type parentType)
         {
             if (Value == null)
-                return string.Format("({0} IS {1}NULL)", columnName, Not ? "NOT " : string.Empty);
+                return $"({columnName} IS {(Not ? "NOT " : string.Empty)}NULL)";
 
             if (Value is IEnumerable values && !(Value is string))
             {
                 if (Operator != Operator.Eq)
                     throw new ArgumentException("Operator must be set to Eq for Enumerable types");
 
-                return string.Format("({0} {1}IN ({2}))", columnName, Not ? "NOT " : string.Empty, GetParameterString(sqlGenerator, parameters, values));
+                return $"({columnName} {(Not ? "NOT " : string.Empty)}IN ({GetParameterString(sqlGenerator, parameters, values)}))";
             }
 
             string format;

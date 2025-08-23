@@ -50,20 +50,42 @@ namespace DapperExtensions.Sql
 
         private string GetPartitionBy()
         {
-            var partitionBy = AllColumns.Where(c =>
-                c.Property.KeyType == KeyType.Assigned ||
-                c.Property.KeyType == KeyType.Identity ||
-                c.Property.KeyType == KeyType.SequenceIdentity)
-                .Select(c => c.SimpleAlias).FirstOrDefault();
-
-            if (!string.IsNullOrEmpty(partitionBy))
+            string? partitionBy = null;
+            Table? keyTable = null;
+            
+            // Single pass to find first key column
+            foreach (var c in AllColumns)
             {
-                var keyTable = AllColumns.Where(c => c.SimpleAlias.Equals(partitionBy)).Select(c => c.Table).First();
+                if (c.Property.KeyType == KeyType.Assigned ||
+                    c.Property.KeyType == KeyType.Identity ||
+                    c.Property.KeyType == KeyType.SequenceIdentity)
+                {
+                    partitionBy = c.SimpleAlias;
+                    keyTable = c.Table;
+                    break;
+                }
+            }
 
-                return AllColumns.Where(c => (c.Property.KeyType == KeyType.Assigned || c.Property.KeyType == KeyType.Identity ||
-                     c.Property.KeyType == KeyType.SequenceIdentity) && c.Table.Equals(keyTable))
-                    .Select(c => c.SimpleAlias)
-                    .Aggregate((prior, next) => $"{prior}, {next}");
+            if (!string.IsNullOrEmpty(partitionBy) && keyTable != null)
+            {
+                var sb = new StringBuilder();
+                bool first = true;
+                
+                // Build comma-separated list of key columns from same table
+                foreach (var c in AllColumns)
+                {
+                    if ((c.Property.KeyType == KeyType.Assigned || 
+                         c.Property.KeyType == KeyType.Identity ||
+                         c.Property.KeyType == KeyType.SequenceIdentity) && 
+                        c.Table.Equals(keyTable))
+                    {
+                        if (!first) sb.Append(", ");
+                        sb.Append(c.SimpleAlias);
+                        first = false;
+                    }
+                }
+                
+                return sb.ToString();
             }
             else
             {

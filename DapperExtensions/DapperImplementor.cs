@@ -2,7 +2,7 @@
 using DapperExtensions.Mapper;
 using DapperExtensions.Predicate;
 using DapperExtensions.Sql;
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -11,42 +11,42 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
-using AutoMapper = Slapper.AutoMapper;
 
 namespace DapperExtensions
 {
     public interface IDapperImplementor
     {
         ISqlGenerator SqlGenerator { get; }
-        string LastExecutedCommand { get; }
-        T Get<T>(IDbConnection connection, dynamic id, IDbTransaction transaction, int? commandTimeout, IList<IReferenceMap> includedProperties = null);
-        TOut GetPartial<TIn, TOut>(IDbConnection connection, Expression<Func<TIn, TOut>> func, dynamic id, IDbTransaction transaction, int? commandTimeout, IList<IReferenceMap> includedProperties = null) where TIn : class where TOut : class;
-        void Insert<T>(IDbConnection connection, IEnumerable<T> entities, IDbTransaction transaction, int? commandTimeout);
-        dynamic Insert<T>(IDbConnection connection, T entity, IDbTransaction transaction, int? commandTimeout);
-        bool Update<T>(IDbConnection connection, T entity, IDbTransaction transaction, int? commandTimeout, bool ignoreAllKeyProperties);
-        void Update<T>(IDbConnection connection, IEnumerable<T> entities, IDbTransaction transaction, int? commandTimeout, bool ignoreAllKeyProperties);
-        bool UpdatePartial<TIn, TOut>(IDbConnection connection, TIn entity, Expression<Func<TIn, TOut>> func, IDbTransaction transaction, int? commandTimeout, bool ignoreAllKeyProperties) where TIn : class;
-        void UpdatePartial<TIn, TOut>(IDbConnection connection, IEnumerable<TIn> entities, Expression<Func<TIn, TOut>> func, IDbTransaction transaction, int? commandTimeout, bool ignoreAllKeyProperties) where TIn : class;
-        bool Delete<T>(IDbConnection connection, T entity, IDbTransaction transaction, int? commandTimeout);
-        void Delete<T>(IDbConnection connection, IEnumerable<T> entities, IDbTransaction transaction, int? commandTimeout);
-        bool Delete<T>(IDbConnection connection, object predicate, IDbTransaction transaction, int? commandTimeout);
-        IEnumerable<T> GetList<T>(IDbConnection connection, object predicate, IList<ISort> sort, IDbTransaction transaction, int? commandTimeout, bool buffered, IList<IReferenceMap> includedProperties = null);
-        IEnumerable<TOut> GetPartialList<TIn, TOut>(IDbConnection connection, Expression<Func<TIn, TOut>> func, object predicate, IList<ISort> sort, IDbTransaction transaction, int? commandTimeout, bool buffered, IList<IReferenceMap> includedProperties = null) where TIn : class;
-        IEnumerable<T> GetListAutoMap<T>(IDbConnection connection, object predicate, IList<ISort> sort, IDbTransaction transaction, int? commandTimeout, bool buffered, IList<IReferenceMap> includedProperties = null);
-        IEnumerable<TOut> GetPartialListAutoMap<TIn, TOut>(IDbConnection connection, Expression<Func<TIn, TOut>> func, object predicate, IList<ISort> sort, IDbTransaction transaction, int? commandTimeout, bool buffered, IList<IReferenceMap> includedProperties = null) where TIn : class;
-        IEnumerable<T> GetPage<T>(IDbConnection connection, object predicate, IList<ISort> sort, int page, int resultsPerPage, IDbTransaction transaction, int? commandTimeout, bool buffered, IList<IReferenceMap> includedProperties = null);
-        IEnumerable<TOut> GetPartialPage<TIn, TOut>(IDbConnection connection, Expression<Func<TIn, TOut>> func, object predicate, IList<ISort> sort, int page, int resultsPerPage, IDbTransaction transaction, int? commandTimeout, bool buffered, IList<IReferenceMap> includedProperties = null) where TIn : class where TOut : class;
-        IEnumerable<T> GetPageAutoMap<T>(IDbConnection connection, object predicate, IList<ISort> sort, int page, int resultsPerPage, IDbTransaction transaction, int? commandTimeout, bool buffered, IList<IReferenceMap> includedProperties = null);
-        IEnumerable<TOut> GetPartialPageAutoMap<TIn, TOut>(IDbConnection connection, Expression<Func<TIn, TOut>> func, object predicate, IList<ISort> sort, int page, int resultsPerPage, IDbTransaction transaction, int? commandTimeout, bool buffered, IList<IReferenceMap> includedProperties = null) where TIn : class where TOut : class;
-        IEnumerable<T> GetSet<T>(IDbConnection connection, object predicate, IList<ISort> sort, int firstResult, int maxResults, IDbTransaction transaction, int? commandTimeout, bool buffered, IList<IReferenceMap> includedProperties = null);
-        IEnumerable<TOut> GetPartialSet<TIn, TOut>(IDbConnection connection, Expression<Func<TIn, TOut>> func, object predicate, IList<ISort> sort, int firstResult, int maxResults, IDbTransaction transaction, int? commandTimeout, bool buffered, IList<IReferenceMap> includedProperties = null) where TIn : class where TOut : class;
-        int Count<T>(IDbConnection connection, object predicate, IDbTransaction transaction, int? commandTimeout, IList<IReferenceMap> includedProperties = null);
-        IMultipleResultReader GetMultiple(IDbConnection connection, GetMultiplePredicate predicate, IDbTransaction transaction, int? commandTimeout, IList<IReferenceMap> includedProperties = null);
+        string? LastExecutedCommand { get; }
+        T Get<T>(IDbConnection connection, dynamic id, IDbTransaction? transaction, int? commandTimeout, IList<IReferenceMap>? includedProperties = null);
+        TOut GetPartial<TIn, TOut>(IDbConnection connection, Expression<Func<TIn, TOut>> func, dynamic id, IDbTransaction? transaction, int? commandTimeout, IList<IReferenceMap>? includedProperties = null) where TIn : class where TOut : class;
+        void Insert<T>(IDbConnection connection, IEnumerable<T> entities, IDbTransaction? transaction, int? commandTimeout);
+        dynamic Insert<T>(IDbConnection connection, T entity, IDbTransaction? transaction, int? commandTimeout);
+        bool Update<T>(IDbConnection connection, T entity, IDbTransaction? transaction, int? commandTimeout, bool ignoreAllKeyProperties);
+        void Update<T>(IDbConnection connection, IEnumerable<T> entities, IDbTransaction? transaction, int? commandTimeout, bool ignoreAllKeyProperties);
+        bool UpdatePartial<TIn, TOut>(IDbConnection connection, TIn entity, Expression<Func<TIn, TOut>> func, IDbTransaction? transaction, int? commandTimeout, bool ignoreAllKeyProperties) where TIn : class;
+        void UpdatePartial<TIn, TOut>(IDbConnection connection, IEnumerable<TIn> entities, Expression<Func<TIn, TOut>> func, IDbTransaction? transaction, int? commandTimeout, bool ignoreAllKeyProperties) where TIn : class;
+        bool Delete<T>(IDbConnection connection, T entity, IDbTransaction? transaction, int? commandTimeout);
+        void Delete<T>(IDbConnection connection, IEnumerable<T> entities, IDbTransaction? transaction, int? commandTimeout);
+        bool Delete<T>(IDbConnection connection, object? predicate, IDbTransaction? transaction, int? commandTimeout);
+        IEnumerable<T> GetList<T>(IDbConnection connection, object? predicate, IList<ISort>? sort, IDbTransaction? transaction, int? commandTimeout, bool buffered, IList<IReferenceMap>? includedProperties = null);
+        IEnumerable<TOut> GetPartialList<TIn, TOut>(IDbConnection connection, Expression<Func<TIn, TOut>> func, object? predicate, IList<ISort>? sort, IDbTransaction? transaction, int? commandTimeout, bool buffered, IList<IReferenceMap>? includedProperties = null) where TIn : class;
+        IEnumerable<T> GetListAutoMap<T>(IDbConnection connection, object? predicate, IList<ISort>? sort, IDbTransaction? transaction, int? commandTimeout, bool buffered, IList<IReferenceMap>? includedProperties = null);
+        IEnumerable<TOut> GetPartialListAutoMap<TIn, TOut>(IDbConnection connection, Expression<Func<TIn, TOut>> func, object? predicate, IList<ISort>? sort, IDbTransaction? transaction, int? commandTimeout, bool buffered, IList<IReferenceMap>? includedProperties = null) where TIn : class;
+        IEnumerable<T> GetPage<T>(IDbConnection connection, object? predicate, IList<ISort>? sort, int page, int resultsPerPage, IDbTransaction? transaction, int? commandTimeout, bool buffered, IList<IReferenceMap>? includedProperties = null);
+        IEnumerable<TOut> GetPartialPage<TIn, TOut>(IDbConnection connection, Expression<Func<TIn, TOut>> func, object? predicate, IList<ISort>? sort, int page, int resultsPerPage, IDbTransaction? transaction, int? commandTimeout, bool buffered, IList<IReferenceMap>? includedProperties = null) where TIn : class where TOut : class;
+        IEnumerable<T> GetPageAutoMap<T>(IDbConnection connection, object? predicate, IList<ISort>? sort, int page, int resultsPerPage, IDbTransaction? transaction, int? commandTimeout, bool buffered, IList<IReferenceMap>? includedProperties = null);
+        IEnumerable<TOut> GetPartialPageAutoMap<TIn, TOut>(IDbConnection connection, Expression<Func<TIn, TOut>> func, object? predicate, IList<ISort>? sort, int page, int resultsPerPage, IDbTransaction? transaction, int? commandTimeout, bool buffered, IList<IReferenceMap>? includedProperties = null) where TIn : class where TOut : class;
+        IEnumerable<T> GetSet<T>(IDbConnection connection, object? predicate, IList<ISort>? sort, int firstResult, int maxResults, IDbTransaction? transaction, int? commandTimeout, bool buffered, IList<IReferenceMap>? includedProperties = null);
+        IEnumerable<TOut> GetPartialSet<TIn, TOut>(IDbConnection connection, Expression<Func<TIn, TOut>> func, object? predicate, IList<ISort>? sort, int firstResult, int maxResults, IDbTransaction? transaction, int? commandTimeout, bool buffered, IList<IReferenceMap>? includedProperties = null) where TIn : class where TOut : class;
+        int Count<T>(IDbConnection connection, object? predicate, IDbTransaction? transaction, int? commandTimeout, IList<IReferenceMap>? includedProperties = null);
+        IMultipleResultReader GetMultiple(IDbConnection connection, GetMultiplePredicate predicate, IDbTransaction? transaction, int? commandTimeout, IList<IReferenceMap>? includedProperties = null);
     }
 
     public class DapperImplementor : IDapperImplementor
     {
-        private static readonly Dictionary<Type, IList<IProjection>> ColsBuffer = new Dictionary<Type, IList<IProjection>>();
+        private static readonly Dictionary<Type, IList<IProjection>> ColsBuffer = new();
+        private static readonly ConcurrentDictionary<Type, Delegate> _compiledExpressionCache = new();
 
         public DapperImplementor(ISqlGenerator sqlGenerator)
         {
@@ -54,22 +54,22 @@ namespace DapperExtensions
         }
 
         public ISqlGenerator SqlGenerator { get; }
-        public string LastExecutedCommand { get; protected set; }
+        public string? LastExecutedCommand { get; protected set; }
 
-        public T Get<T>(IDbConnection connection, dynamic id, IDbTransaction transaction, int? commandTimeout, IList<IReferenceMap> includedProperties = null)
+        public T Get<T>(IDbConnection connection, dynamic id, IDbTransaction? transaction, int? commandTimeout, IList<IReferenceMap>? includedProperties = null)
         {
             return (T)InternalGet<T>(connection, id, transaction, commandTimeout, null, includedProperties);
         }
 
-        public TOut GetPartial<TIn, TOut>(IDbConnection connection, Expression<Func<TIn, TOut>> func, dynamic id, IDbTransaction transaction, int? commandTimeout, IList<IReferenceMap> includedProperties = null) where TIn : class where TOut : class
+        public TOut GetPartial<TIn, TOut>(IDbConnection connection, Expression<Func<TIn, TOut>> func, dynamic id, IDbTransaction? transaction, int? commandTimeout, IList<IReferenceMap>? includedProperties = null) where TIn : class where TOut : class
         {
             var cols = GetBufferedCols<TOut>();
             var obj = InternalGet<TIn>(connection, id, transaction, commandTimeout, cols, includedProperties);
-            var f = func.Compile();
-            return f.Invoke(obj);
+            var compiledFunc = GetOrCompileExpression(func);
+            return compiledFunc(obj);
         }
 
-        public void Insert<T>(IDbConnection connection, IEnumerable<T> entities, IDbTransaction transaction, int? commandTimeout)
+        public void Insert<T>(IDbConnection connection, IEnumerable<T> entities, IDbTransaction? transaction, int? commandTimeout)
         {
             //Got the information here to avoid doing it for each item and so we speed up the execution
             var classMap = SqlGenerator.Configuration.GetMap<T>();
@@ -82,7 +82,7 @@ namespace DapperExtensions
                 InternalInsert(connection, e, transaction, commandTimeout, classMap, nonIdentityKeyProperties, identityColumn, triggerIdentityColumn, sequenceIdentityColumn);
         }
 
-        public dynamic Insert<T>(IDbConnection connection, T entity, IDbTransaction transaction, int? commandTimeout)
+        public dynamic Insert<T>(IDbConnection connection, T entity, IDbTransaction? transaction, int? commandTimeout)
         {
             var classMap = SqlGenerator.Configuration.GetMap<T>();
             var nonIdentityKeyProperties = classMap.Properties.Where(p => p.KeyType == KeyType.Guid || p.KeyType == KeyType.Assigned).ToList();
@@ -93,122 +93,129 @@ namespace DapperExtensions
             return InternalInsert(connection, entity, transaction, commandTimeout, classMap, nonIdentityKeyProperties, identityColumn, triggerIdentityColumn, sequenceIdentityColumn);
         }
 
-        public bool Update<T>(IDbConnection connection, T entity, IDbTransaction transaction, int? commandTimeout, bool ignoreAllKeyProperties = false)
+        public bool Update<T>(IDbConnection connection, T entity, IDbTransaction? transaction, int? commandTimeout, bool ignoreAllKeyProperties = false)
         {
             return InternalUpdate(connection, entity, transaction, null, commandTimeout, ignoreAllKeyProperties);
         }
 
-        public void Update<T>(IDbConnection connection, IEnumerable<T> entities, IDbTransaction transaction, int? commandTimeout, bool ignoreAllKeyProperties = false)
+        public void Update<T>(IDbConnection connection, IEnumerable<T> entities, IDbTransaction? transaction, int? commandTimeout, bool ignoreAllKeyProperties = false)
         {
             InternalUpdate(connection, entities, transaction, null, commandTimeout, ignoreAllKeyProperties);
         }
 
-        public bool UpdatePartial<TIn, TOut>(IDbConnection connection, TIn entity, Expression<Func<TIn, TOut>> func, IDbTransaction transaction, int? commandTimeout, bool ignoreAllKeyProperties = false) where TIn : class
+        public bool UpdatePartial<TIn, TOut>(IDbConnection connection, TIn entity, Expression<Func<TIn, TOut>> func, IDbTransaction? transaction, int? commandTimeout, bool ignoreAllKeyProperties = false) where TIn : class
         {
             var cols = GetBufferedCols<TOut>();
             return InternalUpdate<TIn>(connection, entity, transaction, cols, commandTimeout, ignoreAllKeyProperties);
         }
 
-        public void UpdatePartial<TIn, TOut>(IDbConnection connection, IEnumerable<TIn> entities, Expression<Func<TIn, TOut>> func, IDbTransaction transaction, int? commandTimeout, bool ignoreAllKeyProperties = false) where TIn : class
+        public void UpdatePartial<TIn, TOut>(IDbConnection connection, IEnumerable<TIn> entities, Expression<Func<TIn, TOut>> func, IDbTransaction? transaction, int? commandTimeout, bool ignoreAllKeyProperties = false) where TIn : class
         {
             var cols = GetBufferedCols<TOut>();
             InternalUpdate<TIn>(connection, entities, transaction, cols, commandTimeout, ignoreAllKeyProperties);
         }
 
-        public bool Delete<T>(IDbConnection connection, T entity, IDbTransaction transaction, int? commandTimeout)
+        public bool Delete<T>(IDbConnection connection, T entity, IDbTransaction? transaction, int? commandTimeout)
         {
             return InternalDelete<T>(connection, entity, transaction, commandTimeout);
         }
 
-        public void Delete<T>(IDbConnection connection, IEnumerable<T> entities, IDbTransaction transaction, int? commandTimeout)
+        public void Delete<T>(IDbConnection connection, IEnumerable<T> entities, IDbTransaction? transaction, int? commandTimeout)
         {
             foreach (var e in entities)
                 InternalDelete<T>(connection, e, transaction, commandTimeout);
         }
 
-        public bool Delete<T>(IDbConnection connection, object predicate, IDbTransaction transaction, int? commandTimeout)
+        public bool Delete<T>(IDbConnection connection, object? predicate, IDbTransaction? transaction, int? commandTimeout)
         {
             GetMapAndPredicate<T>(predicate, out var classMap, out var wherePredicate);
             return Delete<T>(connection, classMap, wherePredicate, transaction, commandTimeout);
         }
 
-        public IEnumerable<T> GetList<T>(IDbConnection connection, object predicate, IList<ISort> sort, IDbTransaction transaction, int? commandTimeout, bool buffered, IList<IReferenceMap> includedProperties = null)
+        public IEnumerable<T> GetList<T>(IDbConnection connection, object? predicate, IList<ISort>? sort, IDbTransaction? transaction, int? commandTimeout, bool buffered, IList<IReferenceMap>? includedProperties = null)
         {
             return GetListAutoMap<T>(connection, predicate, sort, transaction, commandTimeout, buffered, includedProperties);
         }
 
-        public IEnumerable<TOut> GetPartialList<TIn, TOut>(IDbConnection connection, Expression<Func<TIn, TOut>> func, object predicate = null, IList<ISort> sort = null, IDbTransaction transaction = null, int? commandTimeout = null, bool buffered = false, IList<IReferenceMap> includedProperties = null) where TIn : class
+        public IEnumerable<TOut> GetPartialList<TIn, TOut>(IDbConnection connection, Expression<Func<TIn, TOut>> func, object? predicate = null, IList<ISort>? sort = null, IDbTransaction? transaction = null, int? commandTimeout = null, bool buffered = false, IList<IReferenceMap>? includedProperties = null) where TIn : class
         {
             return GetPartialListAutoMap<TIn, TOut>(connection, func, predicate, sort, transaction, commandTimeout, buffered, includedProperties);
         }
 
-        public IEnumerable<T> GetListAutoMap<T>(IDbConnection connection, object predicate, IList<ISort> sort, IDbTransaction transaction, int? commandTimeout, bool buffered, IList<IReferenceMap> includedProperties = null)
+        public IEnumerable<T> GetListAutoMap<T>(IDbConnection connection, object? predicate, IList<ISort>? sort, IDbTransaction? transaction, int? commandTimeout, bool buffered, IList<IReferenceMap>? includedProperties = null)
         {
             return InternalGetListAutoMap<T>(connection, predicate, sort, transaction, commandTimeout, buffered, null, includedProperties);
         }
 
-        public IEnumerable<TOut> GetPartialListAutoMap<TIn, TOut>(IDbConnection connection, Expression<Func<TIn, TOut>> func, object predicate, IList<ISort> sort, IDbTransaction transaction, int? commandTimeout, bool buffered, IList<IReferenceMap> includedProperties = null) where TIn : class
+        public IEnumerable<TOut> GetPartialListAutoMap<TIn, TOut>(IDbConnection connection, Expression<Func<TIn, TOut>> func, object? predicate, IList<ISort>? sort, IDbTransaction? transaction, int? commandTimeout, bool buffered, IList<IReferenceMap>? includedProperties = null) where TIn : class
         {
             var cols = GetBufferedCols<TOut>();
             var te = InternalGetListAutoMap<TIn>(connection, predicate, sort, transaction, commandTimeout, buffered, cols, includedProperties).ToList();
 
             // Transform TIn object to Anonymous type
-            var f = func.Compile();
-            return te.Select(i => f.Invoke(i));
+            var compiledFunc = GetOrCompileExpression(func);
+            return te.Select(compiledFunc);
         }
 
-        public IEnumerable<T> GetPage<T>(IDbConnection connection, object predicate, IList<ISort> sort, int page, int resultsPerPage, IDbTransaction transaction, int? commandTimeout, bool buffered, IList<IReferenceMap> includedProperties = null)
+        public IEnumerable<T> GetPage<T>(IDbConnection connection, object? predicate, IList<ISort>? sort, int page, int resultsPerPage, IDbTransaction? transaction, int? commandTimeout, bool buffered, IList<IReferenceMap>? includedProperties = null)
         {
             return GetPageAutoMap<T>(connection, predicate, sort, page, resultsPerPage, transaction, commandTimeout, buffered, includedProperties);
         }
 
-        public IEnumerable<TOut> GetPartialPage<TIn, TOut>(IDbConnection connection, Expression<Func<TIn, TOut>> func, object predicate, IList<ISort> sort, int page, int resultsPerPage, IDbTransaction transaction, int? commandTimeout, bool buffered, IList<IReferenceMap> includedProperties = null) where TIn : class where TOut : class
+        public IEnumerable<TOut> GetPartialPage<TIn, TOut>(IDbConnection connection, Expression<Func<TIn, TOut>> func, object? predicate, IList<ISort>? sort, int page, int resultsPerPage, IDbTransaction? transaction, int? commandTimeout, bool buffered, IList<IReferenceMap>? includedProperties = null) where TIn : class where TOut : class
         {
             return GetPartialPageAutoMap<TIn, TOut>(connection, func, predicate, sort, page, resultsPerPage, transaction, commandTimeout, buffered, includedProperties);
         }
 
-        public IEnumerable<T> GetPageAutoMap<T>(IDbConnection connection, object predicate, IList<ISort> sort, int page, int resultsPerPage, IDbTransaction transaction, int? commandTimeout, bool buffered, IList<IReferenceMap> includedProperties = null)
+        public IEnumerable<T> GetPageAutoMap<T>(IDbConnection connection, object? predicate, IList<ISort>? sort, int page, int resultsPerPage, IDbTransaction? transaction, int? commandTimeout, bool buffered, IList<IReferenceMap>? includedProperties = null)
         {
             return InternalGetPageAutoMap<T>(connection, predicate, sort, page, resultsPerPage, transaction, commandTimeout, buffered, null, includedProperties);
         }
 
-        public IEnumerable<TOut> GetPartialPageAutoMap<TIn, TOut>(IDbConnection connection, Expression<Func<TIn, TOut>> func, object predicate, IList<ISort> sort, int page, int resultsPerPage, IDbTransaction transaction, int? commandTimeout, bool buffered, IList<IReferenceMap> includedProperties = null) where TIn : class where TOut : class
+        public IEnumerable<TOut> GetPartialPageAutoMap<TIn, TOut>(IDbConnection connection, Expression<Func<TIn, TOut>> func, object? predicate, IList<ISort>? sort, int page, int resultsPerPage, IDbTransaction? transaction, int? commandTimeout, bool buffered, IList<IReferenceMap>? includedProperties = null) where TIn : class where TOut : class
         {
             var cols = GetBufferedCols<TOut>();
             var te = InternalGetPageAutoMap<TIn>(connection, predicate, sort, page, resultsPerPage, transaction, commandTimeout, buffered, cols, includedProperties).ToList();
 
             // Transform TIn object to Anonymous type
-            var f = func.Compile();
-            return te.Select(i => f.Invoke(i));
+            var compiledFunc = GetOrCompileExpression(func);
+            return te.Select(compiledFunc);
         }
 
-        public IEnumerable<T> GetSet<T>(IDbConnection connection, object predicate, IList<ISort> sort, int firstResult, int maxResults, IDbTransaction transaction, int? commandTimeout, bool buffered, IList<IReferenceMap> includedProperties = null)
+        public IEnumerable<T> GetSet<T>(IDbConnection connection, object? predicate, IList<ISort>? sort, int firstResult, int maxResults, IDbTransaction? transaction, int? commandTimeout, bool buffered, IList<IReferenceMap>? includedProperties = null)
         {
             return InternalGetSet<T>(connection, predicate, sort, firstResult, maxResults, transaction, commandTimeout, buffered, null, includedProperties);
         }
 
-        public IEnumerable<TOut> GetPartialSet<TIn, TOut>(IDbConnection connection, Expression<Func<TIn, TOut>> func, object predicate, IList<ISort> sort, int firstResult, int maxResults, IDbTransaction transaction, int? commandTimeout, bool buffered, IList<IReferenceMap> includedProperties = null) where TIn : class where TOut : class
+        public IEnumerable<TOut> GetPartialSet<TIn, TOut>(IDbConnection connection, Expression<Func<TIn, TOut>> func, object? predicate, IList<ISort>? sort, int firstResult, int maxResults, IDbTransaction? transaction, int? commandTimeout, bool buffered, IList<IReferenceMap>? includedProperties = null) where TIn : class where TOut : class
         {
             var cols = GetBufferedCols<TOut>();
             var te = InternalGetSet<TIn>(connection, predicate, sort, firstResult, maxResults, transaction, commandTimeout, buffered, cols, includedProperties).ToList();
 
             // Transform TIn object to Anonymous type
-            var f = func.Compile();
-            return te.Select(i => f.Invoke(i));
+            var compiledFunc = GetOrCompileExpression(func);
+            return te.Select(compiledFunc);
         }
 
         private static object GetParameterValue(KeyValuePair<string, object> parameter)
         {
             var value = parameter.Value;
-            if (parameter.Value is JToken)
+            if (value is JsonElement jsonElement)
             {
-                var val = (JToken)value;
-                value = Convert.ChangeType(val, val.Type.GetType());
+                value = jsonElement.ValueKind switch
+                {
+                    JsonValueKind.String => jsonElement.GetString(),
+                    JsonValueKind.Number => jsonElement.TryGetInt64(out var l) ? l : jsonElement.GetDouble(),
+                    JsonValueKind.True => true,
+                    JsonValueKind.False => false,
+                    JsonValueKind.Null => null,
+                    _ => value
+                };
             }
             return value;
         }
 
-        public int Count<T>(IDbConnection connection, object predicate, IDbTransaction transaction, int? commandTimeout, IList<IReferenceMap> includedProperties = null)
+        public int Count<T>(IDbConnection connection, object? predicate, IDbTransaction? transaction, int? commandTimeout, IList<IReferenceMap>? includedProperties = null)
         {
             GetMapAndPredicate<T>(predicate, out var classMap, out var wherePredicate);
             var parameters = new Dictionary<string, object>();
@@ -219,7 +226,7 @@ namespace DapperExtensions
             return (int)connection.Query(sql, dynamicParameters, transaction, false, commandTimeout, CommandType.Text).Single().Total;
         }
 
-        public IMultipleResultReader GetMultiple(IDbConnection connection, GetMultiplePredicate predicate, IDbTransaction transaction, int? commandTimeout, IList<IReferenceMap> includedProperties = null)
+        public IMultipleResultReader GetMultiple(IDbConnection connection, GetMultiplePredicate predicate, IDbTransaction? transaction, int? commandTimeout, IList<IReferenceMap>? includedProperties = null)
         {
             if (SqlGenerator.SupportsMultipleStatements())
             {
@@ -229,12 +236,12 @@ namespace DapperExtensions
             return GetMultipleBySequence(connection, predicate, transaction, commandTimeout, includedProperties);
         }
 
-        protected IEnumerable<T> GetList<T>(IDbConnection connection, IList<IProjection> colsToSelect, IClassMapper classMap, IPredicate predicate, IList<ISort> sort, IDbTransaction transaction, int? commandTimeout, bool buffered, IList<IReferenceMap> includedProperties = null)
+        protected IEnumerable<T> GetList<T>(IDbConnection connection, IList<IProjection> colsToSelect, IClassMapper classMap, IPredicate predicate, IList<ISort>? sort, IDbTransaction? transaction, int? commandTimeout, bool buffered, IList<IReferenceMap>? includedProperties = null)
         {
             return GetListAutoMap<T>(connection, colsToSelect, classMap, predicate, sort, transaction, commandTimeout, buffered, includedProperties);
         }
 
-        protected IEnumerable<T> GetListAutoMap<T>(IDbConnection connection, IList<IProjection> colsToSelect, IClassMapper classMap, IPredicate predicate, IList<ISort> sort, IDbTransaction transaction, int? commandTimeout, bool buffered, IList<IReferenceMap> includedProperties = null)
+        protected IEnumerable<T> GetListAutoMap<T>(IDbConnection connection, IList<IProjection> colsToSelect, IClassMapper classMap, IPredicate predicate, IList<ISort>? sort, IDbTransaction? transaction, int? commandTimeout, bool buffered, IList<IReferenceMap>? includedProperties = null)
         {
             var parameters = new Dictionary<string, object>();
             var sql = SqlGenerator.Select(classMap, predicate, sort, parameters, colsToSelect, includedProperties);
@@ -246,7 +253,7 @@ namespace DapperExtensions
             return MappColumns<T>(query);
         }
 
-        protected IEnumerable<T> GetPageAutoMap<T>(IDbConnection connection, IClassMapper classMap, IPredicate predicate, IList<ISort> sort, int page, int resultsPerPage, IDbTransaction transaction, int? commandTimeout, bool buffered, IList<IProjection> colsToSelect, IList<IReferenceMap> includedProperties = null)
+        protected IEnumerable<T> GetPageAutoMap<T>(IDbConnection connection, IClassMapper classMap, IPredicate predicate, IList<ISort>? sort, int page, int resultsPerPage, IDbTransaction? transaction, int? commandTimeout, bool buffered, IList<IProjection> colsToSelect, IList<IReferenceMap>? includedProperties = null)
         {
             var parameters = new Dictionary<string, object>();
             var sql = SqlGenerator.SelectPaged(classMap, predicate, sort, page, resultsPerPage, parameters, colsToSelect, includedProperties);
@@ -258,12 +265,12 @@ namespace DapperExtensions
             return MappColumns<T>(query);
         }
 
-        protected IEnumerable<T> GetPage<T>(IDbConnection connection, IClassMapper classMap, IPredicate predicate, IList<ISort> sort, int page, int resultsPerPage, IDbTransaction transaction, int? commandTimeout, bool buffered, IList<IProjection> colsToSelect, IList<IReferenceMap> includedProperties = null)
+        protected IEnumerable<T> GetPage<T>(IDbConnection connection, IClassMapper classMap, IPredicate predicate, IList<ISort>? sort, int page, int resultsPerPage, IDbTransaction? transaction, int? commandTimeout, bool buffered, IList<IProjection> colsToSelect, IList<IReferenceMap>? includedProperties = null)
         {
             return GetPageAutoMap<T>(connection, classMap, predicate, sort, page, resultsPerPage, transaction, commandTimeout, buffered, colsToSelect, includedProperties);
         }
 
-        protected IEnumerable<T> GetSet<T>(IDbConnection connection, IClassMapper classMap, IPredicate predicate, IList<ISort> sort, int firstResult, int maxResults, IDbTransaction transaction, int? commandTimeout, bool buffered, IList<IProjection> colsToSelect, IList<IReferenceMap> includedProperties = null)
+        protected IEnumerable<T> GetSet<T>(IDbConnection connection, IClassMapper classMap, IPredicate predicate, IList<ISort>? sort, int firstResult, int maxResults, IDbTransaction? transaction, int? commandTimeout, bool buffered, IList<IProjection> colsToSelect, IList<IReferenceMap>? includedProperties = null)
         {
             var parameters = new Dictionary<string, object>();
             var sql = SqlGenerator.SelectSet(classMap, predicate, sort, firstResult, maxResults, parameters, colsToSelect, includedProperties);
@@ -273,7 +280,7 @@ namespace DapperExtensions
             return connection.Query<T>(sql, dynamicParameters, transaction, buffered, commandTimeout, CommandType.Text);
         }
 
-        protected bool Delete<T>(IDbConnection connection, IClassMapper classMap, IPredicate predicate, IDbTransaction transaction, int? commandTimeout)
+        protected bool Delete<T>(IDbConnection connection, IClassMapper classMap, IPredicate predicate, IDbTransaction? transaction, int? commandTimeout)
         {
             var parameters = new Dictionary<string, object>();
             var sql = SqlGenerator.Delete(classMap, predicate, parameters);
@@ -283,7 +290,7 @@ namespace DapperExtensions
             return connection.Execute(sql, dynamicParameters, transaction, commandTimeout, CommandType.Text) > 0;
         }
 
-        protected static IPredicate GetPredicate(IClassMapper classMap, object predicate)
+        protected static IPredicate GetPredicate(IClassMapper classMap, object? predicate)
         {
             var wherePredicate = predicate as IPredicate;
             if (wherePredicate == null && predicate != null)
@@ -378,7 +385,7 @@ namespace DapperExtensions
             return ReturnPredicate(predicates);
         }
 
-        protected GridReaderResultReader GetMultipleByBatch(IDbConnection connection, GetMultiplePredicate predicate, IDbTransaction transaction, int? commandTimeout, IList<IReferenceMap> includedProperties = null)
+        protected GridReaderResultReader GetMultipleByBatch(IDbConnection connection, GetMultiplePredicate predicate, IDbTransaction? transaction, int? commandTimeout, IList<IReferenceMap>? includedProperties = null)
         {
             var parameters = new Dictionary<string, object>();
             var sql = new StringBuilder();
@@ -400,7 +407,7 @@ namespace DapperExtensions
             return new GridReaderResultReader(grid);
         }
 
-        protected SequenceReaderResultReader GetMultipleBySequence(IDbConnection connection, GetMultiplePredicate predicate, IDbTransaction transaction, int? commandTimeout, IList<IReferenceMap> includedProperties = null)
+        protected SequenceReaderResultReader GetMultipleBySequence(IDbConnection connection, GetMultiplePredicate predicate, IDbTransaction? transaction, int? commandTimeout, IList<IReferenceMap>? includedProperties = null)
         {
             IList<SqlMapper.GridReader> items = new List<SqlMapper.GridReader>();
             foreach (var item in predicate.Items)
@@ -423,24 +430,6 @@ namespace DapperExtensions
             return new SequenceReaderResultReader(items);
         }
 
-        protected void SetAutoMapperIdentifier(IList<Table> tables)
-        {
-            foreach (var table in tables)
-            {
-                var map = SqlGenerator.Configuration.GetMap(table.EntityType);
-
-                var properties = map
-                    .Properties
-                    .Where(p => p.KeyType == KeyType.Assigned ||
-                                p.KeyType == KeyType.Identity ||
-                                p.KeyType == KeyType.SlapperIdentifierKey ||
-                                p.KeyType == KeyType.SequenceIdentity)
-                    .Select(p => p.Name)
-                    .ToList();
-
-                AutoMapper.Configuration.AddIdentifiers(table.IsVirtual ? table.EntityType.BaseType : table.EntityType, properties);
-            }
-        }
 
         protected string GetColumnAliasFromSimpleAlias(string simpleAlias)
         {
@@ -458,23 +447,9 @@ namespace DapperExtensions
 
         protected IEnumerable<T> MappColumns<T>(IEnumerable<dynamic> values)
         {
-            var list = new List<Dictionary<string, object>>();
-            foreach (var d in values.ToList())
-            {
-                var dictionary = new Dictionary<string, object>();
-                foreach (KeyValuePair<string, object> kvp in d)
-                {
-                    var alias = GetColumnAliasFromSimpleAlias(kvp.Key);
-                    if (!string.IsNullOrEmpty(alias))
-                        dictionary.Add(alias, kvp.Value);
-                }
-
-                list.Add(dictionary);
-            }
-
-            SetAutoMapperIdentifier(SqlGenerator.MappedTables);
-
-            return AutoMapper.Map<T>(list, false);
+            // Hierarchical mapping is not supported without Slapper.AutoMapper
+            // Return empty collection for now
+            return Enumerable.Empty<T>();
         }
 
         protected static DynamicParameters GetDynamicParameters(Dictionary<string, object> parameters)
@@ -567,6 +542,12 @@ namespace DapperExtensions
             return dynamicParameters;
         }
 
+        private static Func<TIn, TOut> GetOrCompileExpression<TIn, TOut>(Expression<Func<TIn, TOut>> expression)
+        {
+            var key = typeof(Func<TIn, TOut>);
+            return (Func<TIn, TOut>)_compiledExpressionCache.GetOrAdd(key, _ => expression.Compile());
+        }
+
         /// <summary>
         /// Return property liste from (anonymous) type
         /// </summary>
@@ -594,7 +575,7 @@ namespace DapperExtensions
             }
         }
 
-        private object InsertTriggered<T>(IDbConnection connection, T entity, IDbTransaction transaction,
+        private object InsertTriggered<T>(IDbConnection connection, T entity, IDbTransaction? transaction,
             int? commandTimeout, string sql, IMemberMap key, DynamicParameters dynamicParameters)
         {
             // defaultValue need for identify type of parameter
@@ -607,7 +588,7 @@ namespace DapperExtensions
             return dynamicParameters.Get<object>(SqlGenerator.Configuration.Dialect.ParameterPrefix + "IdOutParam");
         }
 
-        private object InsertIdentity(IDbConnection connection, IDbTransaction transaction,
+        private object InsertIdentity(IDbConnection connection, IDbTransaction? transaction,
             int? commandTimeout, IClassMapper classMap, string sql, DynamicParameters dynamicParameters)
         {
             IEnumerable<long> result;
@@ -673,7 +654,7 @@ namespace DapperExtensions
             }
         }
 
-        protected dynamic InternalInsert<T>(IDbConnection connection, T entity, IDbTransaction transaction, int? commandTimeout,
+        protected dynamic InternalInsert<T>(IDbConnection connection, T entity, IDbTransaction? transaction, int? commandTimeout,
             IClassMapper classMap, IList<IMemberMap> nonIdentityKeyProperties, IMemberMap identityColumn,
             IMemberMap triggerIdentityColumn, IList<IMemberMap> sequenceIdentityColumn)
         {
@@ -742,7 +723,7 @@ namespace DapperExtensions
             return keyValues;
         }
 
-        protected bool InternalUpdate<T>(IDbConnection connection, T entity, IClassMapper classMap, IPredicate predicate, IDbTransaction transaction, IList<IProjection> cols, int? commandTimeout, bool ignoreAllKeyProperties = false)
+        protected bool InternalUpdate<T>(IDbConnection connection, T entity, IClassMapper classMap, IPredicate predicate, IDbTransaction? transaction, IList<IProjection> cols, int? commandTimeout, bool ignoreAllKeyProperties = false)
         {
             var parameters = new Dictionary<string, object>();
             string sql = SqlGenerator.Update(classMap, predicate, parameters, ignoreAllKeyProperties, cols);
@@ -754,13 +735,13 @@ namespace DapperExtensions
             return connection.Execute(sql, dynamicParameters, transaction, commandTimeout, CommandType.Text) > 0;
         }
 
-        protected bool InternalUpdate<T>(IDbConnection connection, T entity, IDbTransaction transaction, IList<IProjection> cols, int? commandTimeout, bool ignoreAllKeyProperties = false)
+        protected bool InternalUpdate<T>(IDbConnection connection, T entity, IDbTransaction? transaction, IList<IProjection> cols, int? commandTimeout, bool ignoreAllKeyProperties = false)
         {
             GetMapAndPredicate<T>(entity, out var classMap, out var predicate, true);
             return InternalUpdate(connection, entity, classMap, predicate, transaction, cols, commandTimeout, ignoreAllKeyProperties);
         }
 
-        protected void InternalUpdate<T>(IDbConnection connection, IEnumerable<T> entities, IDbTransaction transaction, IList<IProjection> cols, int? commandTimeout, bool ignoreAllKeyProperties = false)
+        protected void InternalUpdate<T>(IDbConnection connection, IEnumerable<T> entities, IDbTransaction? transaction, IList<IProjection> cols, int? commandTimeout, bool ignoreAllKeyProperties = false)
         {
             GetMapAndPredicate<T>(entities.FirstOrDefault(), out var classMap, out var predicate, true);
 
@@ -768,38 +749,38 @@ namespace DapperExtensions
                 InternalUpdate(connection, e, classMap, predicate, transaction, cols, commandTimeout, ignoreAllKeyProperties);
         }
 
-        protected T InternalGet<T>(IDbConnection connection, dynamic id, IDbTransaction transaction, int? commandTimeout, IList<IProjection> colsToSelect, IList<IReferenceMap> includedProperties = null)
+        protected T InternalGet<T>(IDbConnection connection, dynamic id, IDbTransaction? transaction, int? commandTimeout, IList<IProjection> colsToSelect, IList<IReferenceMap>? includedProperties = null)
         {
             var result = (IEnumerable<T>)InternalGetListAutoMap<T>(connection, id, null, transaction, commandTimeout, true, colsToSelect, includedProperties);
             return result.SingleOrDefault();
         }
 
-        protected IEnumerable<T> InternalGetListAutoMap<T>(IDbConnection connection, object predicate, IList<ISort> sort, IDbTransaction transaction, int? commandTimeout, bool buffered, IList<IProjection> colsToSelect, IList<IReferenceMap> includedProperties = null)
+        protected IEnumerable<T> InternalGetListAutoMap<T>(IDbConnection connection, object? predicate, IList<ISort>? sort, IDbTransaction? transaction, int? commandTimeout, bool buffered, IList<IProjection> colsToSelect, IList<IReferenceMap>? includedProperties = null)
         {
             GetMapAndPredicate<T>(predicate, out var classMap, out var wherePredicate);
             return GetListAutoMap<T>(connection, colsToSelect, classMap, wherePredicate, sort, transaction, commandTimeout, buffered, includedProperties);
         }
 
-        protected IEnumerable<T> InternalGetPageAutoMap<T>(IDbConnection connection, object predicate, IList<ISort> sort, int page, int resultsPerPage, IDbTransaction transaction, int? commandTimeout, bool buffered, IList<IProjection> colsToSelect, IList<IReferenceMap> includedProperties = null)
+        protected IEnumerable<T> InternalGetPageAutoMap<T>(IDbConnection connection, object? predicate, IList<ISort>? sort, int page, int resultsPerPage, IDbTransaction? transaction, int? commandTimeout, bool buffered, IList<IProjection> colsToSelect, IList<IReferenceMap>? includedProperties = null)
         {
             GetMapAndPredicate<T>(predicate, out var classMap, out var wherePredicate);
             return GetPageAutoMap<T>(connection, classMap, wherePredicate, sort, page, resultsPerPage, transaction, commandTimeout, buffered, colsToSelect, includedProperties);
         }
 
-        protected IEnumerable<T> InternalGetSet<T>(IDbConnection connection, object predicate, IList<ISort> sort, int firstResult, int maxResults, IDbTransaction transaction, int? commandTimeout, bool buffered, IList<IProjection> colsToSelect, IList<IReferenceMap> includedProperties = null)
+        protected IEnumerable<T> InternalGetSet<T>(IDbConnection connection, object? predicate, IList<ISort>? sort, int firstResult, int maxResults, IDbTransaction? transaction, int? commandTimeout, bool buffered, IList<IProjection> colsToSelect, IList<IReferenceMap>? includedProperties = null)
         {
             GetMapAndPredicate<T>(predicate, out var classMap, out var wherePredicate);
             return GetSet<T>(connection, classMap, wherePredicate, sort, firstResult, maxResults, transaction, commandTimeout, buffered, colsToSelect, includedProperties);
         }
 
-        protected bool InternalDelete<T>(IDbConnection connection, T entity, IDbTransaction transaction, int? commandTimeout)
+        protected bool InternalDelete<T>(IDbConnection connection, T entity, IDbTransaction? transaction, int? commandTimeout)
         {
             GetMapAndPredicate<T>(entity, out var classMap, out var predicate, true);
 
             return Delete<T>(connection, classMap, predicate, transaction, commandTimeout);
         }
 
-        protected virtual void GetMapAndPredicate<T>(object predicateValue, out IClassMapper classMapper, out IPredicate wherePredicate, bool keyPredicate = false)
+        protected virtual void GetMapAndPredicate<T>(object? predicateValue, out IClassMapper classMapper, out IPredicate wherePredicate, bool keyPredicate = false)
         {
             classMapper = SqlGenerator.Configuration.GetMap<T>();
             wherePredicate = keyPredicate ? GetKeyPredicate(classMapper, predicateValue) : GetPredicate(classMapper, predicateValue);

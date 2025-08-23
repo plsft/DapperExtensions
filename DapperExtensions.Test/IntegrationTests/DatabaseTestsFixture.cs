@@ -1,7 +1,7 @@
 ﻿using Dapper;
 using DapperExtensions.Mapper;
 using DapperExtensions.Sql;
-using Newtonsoft.Json;
+using System.Text.Json;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
@@ -39,7 +39,7 @@ namespace DapperExtensions.Test.IntegrationTests
                 {
                     var fileContent = ReadFile(Path.Combine(ProjectPath, "connectionstrings.json"));
 
-                    foreach (var item in JsonConvert.DeserializeObject<Dictionary<string, string>>(fileContent))
+                    foreach (var item in JsonSerializer.Deserialize<Dictionary<string, string>>(fileContent))
                     {
                         _connectionStrings.Add(item.Key, item.Value);
                     }

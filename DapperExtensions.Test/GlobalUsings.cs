@@ -1,0 +1,13 @@
+global using System;
+global using System.Collections.Generic;
+global using System.Data;
+global using System.Linq;
+global using System.Text;
+global using System.Threading.Tasks;
+global using Microsoft.Data.SqlClient;
+global using NUnit.Framework;
+global using FluentAssertions;
+global using Moq;
+global using Assert = NUnit.Framework.Legacy.ClassicAssert;
+global using StringAssert = NUnit.Framework.Legacy.StringAssert;
+global using CollectionAssert = NUnit.Framework.Legacy.CollectionAssert;

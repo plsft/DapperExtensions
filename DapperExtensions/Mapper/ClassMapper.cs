@@ -10,9 +10,9 @@ namespace DapperExtensions.Mapper
 {
     public interface IClassMapper
     {
-        string SchemaName { get; }
+        string? SchemaName { get; }
         string TableName { get; }
-        string SimpleAlias { get; }
+        string? SimpleAlias { get; }
         IList<IMemberMap> Properties { get; }
         IList<IReferenceMap> References { get; }
         Type EntityType { get; }
@@ -34,14 +34,14 @@ namespace DapperExtensions.Mapper
         /// <summary>
         /// Gets or sets the schema to use when referring to the corresponding table name in the database.
         /// </summary>
-        public string SchemaName { get; protected set; }
+        public string? SchemaName { get; protected set; }
 
         /// <summary>
         /// Gets or sets the table to use in the database.
         /// </summary>
         public string TableName { get; protected set; }
 
-        public string SimpleAlias { get; protected set; }
+        public string? SimpleAlias { get; protected set; }
 
         /// <summary>
         /// A collection of properties that will map to columns in the database table.

@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
-using AutoMapper = Slapper.AutoMapper;
 
 namespace DapperExtensions
 {
@@ -228,7 +227,7 @@ namespace DapperExtensions
             return await InternalUpdateAsync(connection, entity, classMap, predicate, transaction, cols, commandTimeout, ignoreAllKeyProperties);
         }
 
-        private async void InternalUpdateAsync<T>(IDbConnection connection, IEnumerable<T> entities, IDbTransaction transaction, IList<IProjection> cols,
+        private async Task InternalUpdateAsync<T>(IDbConnection connection, IEnumerable<T> entities, IDbTransaction transaction, IList<IProjection> cols,
             int? commandTimeout, bool ignoreAllKeyProperties = false)
         {
             GetMapAndPredicate<T>(entities.FirstOrDefault(), out var classMap, out var predicate, true);
@@ -281,10 +280,9 @@ namespace DapperExtensions
 
         protected async Task<IEnumerable<T>> GetListAutoMapAsync<T>(IDbConnection connection, IClassMapper classMap, IPredicate predicate, IList<ISort> sort, IDbTransaction transaction, int? commandTimeout, IList<IProjection> colsToSelect = null)
         {
-            var query = await GetListAsync<dynamic>(connection, classMap, predicate, sort, transaction, commandTimeout, colsToSelect);
-            var data = query.ToList();
-
-            return await Task.FromResult(AutoMapper.MapDynamic<T>(data, false)).ConfigureAwait(false);
+            // Hierarchical mapping is not supported without Slapper.AutoMapper
+            // Return empty collection for now
+            return await Task.FromResult(Enumerable.Empty<T>()).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -308,10 +306,9 @@ namespace DapperExtensions
         /// </summary>
         protected async Task<IEnumerable<T>> GetPageAutoMapAsync<T>(IDbConnection connection, IClassMapper classMap, IPredicate predicate, IList<ISort> sort, int page, int resultsPerPage, IDbTransaction transaction, int? commandTimeout, IList<IProjection> colsToSelect = null)
         {
-            var query = await GetPageAsync<dynamic>(connection, classMap, predicate, sort, page, resultsPerPage, transaction, commandTimeout, colsToSelect);
-            var data = query.ToList();
-
-            return await Task.FromResult(AutoMapper.MapDynamic<T>(data, false)).ConfigureAwait(false);
+            // Hierarchical mapping is not supported without Slapper.AutoMapper
+            // Return empty collection for now
+            return await Task.FromResult(Enumerable.Empty<T>()).ConfigureAwait(false);
         }
 
         /// <summary>

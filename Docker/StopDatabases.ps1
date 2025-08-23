@@ -5,7 +5,6 @@ param (
     [boolean]$Shutdown = $false
 )
 
-wsl docker container stop docker_db2_1
 wsl docker container stop docker_mariadb_1
 wsl docker container stop docker_oracle-db_1
 wsl docker container stop docker_sqlserver_1

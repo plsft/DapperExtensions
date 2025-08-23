@@ -35,7 +35,7 @@
       1.6.1
       * Added Oracle Dialect to 4.5
       1.6.0
-      * Added DB2 Dialect
+      * Added DB2 Dialect (removed in 1.8.0)
       * Added flag to ignore All Key fields when doing an update
       * Added missing async/await methods
       * Added unmap method to Mapper

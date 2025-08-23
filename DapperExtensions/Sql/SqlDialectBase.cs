@@ -30,41 +30,17 @@ namespace DapperExtensions.Sql
 
     public abstract class SqlDialectBase : ISqlDialect
     {
-        public virtual char OpenQuote
-        {
-            get { return '"'; }
-        }
+        public virtual char OpenQuote => '"';
 
-        public virtual char CloseQuote
-        {
-            get { return '"'; }
-        }
+        public virtual char CloseQuote => '"';
 
-        public virtual string BatchSeperator
-        {
-            get { return ";" + Environment.NewLine; }
-        }
+        public virtual string BatchSeperator => ";" + Environment.NewLine;
 
-        public virtual bool SupportsMultipleStatements
-        {
-            get { return true; }
-        }
+        public virtual bool SupportsMultipleStatements => true;
 
-        public virtual char ParameterPrefix
-        {
-            get
-            {
-                return '@';
-            }
-        }
+        public virtual char ParameterPrefix => '@';
 
-        public virtual string EmptyExpression
-        {
-            get
-            {
-                return "1=1";
-            }
-        }
+        public virtual string EmptyExpression => "1=1";
 
         public virtual bool SupportsCountOfSubquery => true;
 
@@ -75,7 +51,7 @@ namespace DapperExtensions.Sql
                 throw new ArgumentNullException(nameof(tableName), $"{nameof(tableName)} cannot be null or empty.");
             }
 
-            var result = new StringBuilder();
+            StringBuilder result = new();
             if (!string.IsNullOrWhiteSpace(schemaName))
             {
                 result.AppendFormat(QuoteString(schemaName) + ".");
@@ -85,7 +61,7 @@ namespace DapperExtensions.Sql
 
             if (!string.IsNullOrWhiteSpace(alias))
             {
-                result.AppendFormat(" {0}", QuoteString(alias));
+                result.Append($" {QuoteString(alias)}");
             }
             return result.ToString();
         }
@@ -98,7 +74,7 @@ namespace DapperExtensions.Sql
             if (string.IsNullOrWhiteSpace(columnName))
                 throw new ArgumentNullException(nameof(columnName), $"{nameof(columnName)} cannot be null or empty.");
 
-            var result = new StringBuilder();
+            StringBuilder result = new();
             if (!string.IsNullOrWhiteSpace(prefix))
             {
                 result.AppendFormat((IsQuoted(prefix) ? prefix : QuoteString(prefix)) + ".");
@@ -139,7 +115,7 @@ namespace DapperExtensions.Sql
             {
                 return value;
             }
-            return string.Format("{0}{1}{2}", OpenQuote, value.Trim(), CloseQuote);
+            return $"{OpenQuote}{value.Trim()}{CloseQuote}";
         }
 
         public virtual string UnQuoteString(string value)

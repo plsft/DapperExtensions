@@ -17,7 +17,7 @@ namespace DapperExtensions
         private static Func<IDapperExtensionsConfiguration, IDapperAsyncImplementor> _instanceFactory;
         private static IDapperAsyncImplementor _instance;
         private static IDapperExtensionsConfiguration _configuration;
-        private static readonly Dictionary<Type, IList<IProjection>> ColsBuffer = new Dictionary<Type, IList<IProjection>>();
+        private static readonly Dictionary<Type, IList<IProjection>> ColsBuffer = new();
 
         /// <summary>
         /// Gets or sets the default class mapper to use when generating class maps. If not specified, AutoClassMapper<T> is used.
@@ -204,14 +204,14 @@ namespace DapperExtensions
             IList<ISort> sort = null, IDbTransaction transaction = null, int? commandTimeout = null, bool buffered = false) where TIn : class where TOut : class
         {
             var cols = GetBufferedCols<TOut>();
-            List<TIn> list = (await Instance.GetListAsync<TIn>(connection, predicate, sort, transaction, commandTimeout, buffered, cols)).ToList();
+            List<TIn> list = (await Instance.GetListAsync<TIn>(connection, predicate, sort, transaction, commandTimeout, buffered, cols).ConfigureAwait(false)).ToList();
             Func<TIn, TOut> f = func.Compile();
             return list.Select(i => f.Invoke(i));
         }
 
         /// <summary>
         /// Executes a select query using the specified predicate, returning an IEnumerable data typed as per T.
-        /// Contains Slapper.Automaper
+        /// Contains hierarchical mapping (currently not supported)
         /// </summary>
         public static async Task<IEnumerable<T>> GetListAutoMapAsync<T>(this IDbConnection connection, object predicate = null, IList<ISort> sort = null,
             IDbTransaction transaction = null, int? commandTimeout = null, bool buffered = false, IList<IProjection> colsToSelect = null)
@@ -293,7 +293,7 @@ namespace DapperExtensions
         {
             var cols = GetBufferedCols<TOut>();
 
-            List<TIn> list = (await Instance.GetPageAsync<TIn>(connection, predicate, sort, page, resultsPerPage, transaction, commandTimeout, buffered, null)).ToList();
+            List<TIn> list = (await Instance.GetPageAsync<TIn>(connection, predicate, sort, page, resultsPerPage, transaction, commandTimeout, buffered, null).ConfigureAwait(false)).ToList();
 
             // Transform TIn object to Anonymous type
             Func<TIn, TOut> f = func.Compile();
@@ -304,7 +304,7 @@ namespace DapperExtensions
         /// <summary>
         /// Executes a select query using the specified predicate, returning an IEnumerable data typed as per T.
         /// Data returned is dependent upon the specified page and resultsPerPage.
-        /// Contains Slapper.Automaper
+        /// Contains hierarchical mapping (currently not supported)
         /// </summary>
         public static async Task<IEnumerable<T>> GetPageAutoMapAsync<T>(this IDbConnection connection, object predicate = null, IList<ISort> sort = null, int page = 1,
             int resultsPerPage = 10, IDbTransaction transaction = null, int? commandTimeout = null, bool buffered = false, IList<IProjection> colsToSelect = null)
@@ -331,7 +331,7 @@ namespace DapperExtensions
         {
             var cols = GetBufferedCols<TOut>();
 
-            List<TIn> list = (await Instance.GetSetAsync<TIn>(connection, predicate, sort, firstResult, maxResults, transaction, commandTimeout, buffered, cols)).ToList();
+            List<TIn> list = (await Instance.GetSetAsync<TIn>(connection, predicate, sort, firstResult, maxResults, transaction, commandTimeout, buffered, cols).ConfigureAwait(false)).ToList();
 
             // Transform TIn object to Anonymous type
             Func<TIn, TOut> f = func.Compile();
@@ -358,9 +358,9 @@ namespace DapperExtensions
         /// Generates a COMB Guid which solves the fragmented index issue.
         /// See: http://davybrion.com/blog/2009/05/using-the-guidcomb-identifier-strategy
         /// </summary>
-        public static async Task<Guid> GetNextGuid()
+        public static Task<Guid> GetNextGuidAsync()
         {
-            return await Task.FromResult(Instance.SqlGenerator.Configuration.GetNextGuid());
+            return Task.FromResult(Instance.SqlGenerator.Configuration.GetNextGuid());
         }
 
         /// <summary>
