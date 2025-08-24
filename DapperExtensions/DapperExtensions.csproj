@@ -63,6 +63,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="Dapper" Version="2.1.35" />
+		<PackageReference Include="Castle.Core" Version="5.1.1" />
 	</ItemGroup>
 
 	<ItemGroup>

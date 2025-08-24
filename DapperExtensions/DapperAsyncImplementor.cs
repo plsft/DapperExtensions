@@ -1,6 +1,7 @@
 ﻿using Dapper;
 using DapperExtensions.Mapper;
 using DapperExtensions.Predicate;
+using DapperExtensions.Proxy;
 using DapperExtensions.Sql;
 using System.Collections.Generic;
 using System.Data;
@@ -62,6 +63,10 @@ namespace DapperExtensions
         /// </summary>
         Task<bool> UpdateAsync<T>(IDbConnection connection, T entity, IDbTransaction transaction, int? commandTimeout, bool ignoreAllKeyProperties = false, IList<IProjection> colsToUpdate = null);
         /// <summary>
+        /// The asynchronous counterpart to <see cref="IDapperImplementor.UpdateDirty{T}"/>.
+        /// </summary>
+        Task<bool> UpdateDirtyAsync<T>(IDbConnection connection, T entity, IDbTransaction transaction, int? commandTimeout, bool ignoreAllKeyProperties = false) where T : class;
+        /// <summary>
         /// The asynchronous counterpart to <see cref="IDapperImplementor.Delete{T}(IDbConnection, T, IDbTransaction, int?)"/>.
         /// </summary>
         Task<bool> DeleteAsync<T>(IDbConnection connection, T entity, IDbTransaction transaction, int? commandTimeout);
@@ -118,6 +123,13 @@ namespace DapperExtensions
         public async Task<bool> UpdateAsync<T>(IDbConnection connection, T entity, IDbTransaction transaction, int? commandTimeout, bool ignoreAllKeyProperties, IList<IProjection> colsToUpdate = null)
         {
             return await InternalUpdateAsync(connection, entity, transaction, colsToUpdate, commandTimeout, ignoreAllKeyProperties);
+        }
+        /// <summary>
+        /// The asynchronous counterpart to <see cref="IDapperImplementor.UpdateDirty{T}"/>.
+        /// </summary>
+        public async Task<bool> UpdateDirtyAsync<T>(IDbConnection connection, T entity, IDbTransaction transaction, int? commandTimeout, bool ignoreAllKeyProperties = false) where T : class
+        {
+            return await Task.Run(() => UpdateDirty(connection, entity, transaction, commandTimeout, ignoreAllKeyProperties));
         }
         /// <summary>
         /// The asynchronous counterpart to <see cref="IDapperImplementor.Delete{T}(IDbConnection, T, IDbTransaction, int?)"/>.

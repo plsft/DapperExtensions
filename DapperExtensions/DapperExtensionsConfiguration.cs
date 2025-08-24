@@ -1,4 +1,5 @@
 ﻿using DapperExtensions.Mapper;
+using DapperExtensions.Proxy;
 using DapperExtensions.Sql;
 using System;
 using System.Collections.Concurrent;
@@ -23,12 +24,17 @@ namespace DapperExtensions
 
         bool CaseSensitiveSearchEnabled { get; }
         void SetCaseSensitiveSearch(bool value);
+        
+        bool EnableProxyGeneration { get; }
+        void SetProxyGeneration(bool enabled);
+        IProxyFactory ProxyFactory { get; }
     }
 
     public class DapperExtensionsConfiguration : IDapperExtensionsConfiguration
     {
         private readonly ConcurrentDictionary<Type, SqlInjection> _sqlInjections = new ConcurrentDictionary<Type, SqlInjection>();
         private readonly ConcurrentDictionary<Type, IClassMapper> _classMaps = new ConcurrentDictionary<Type, IClassMapper>();
+        private readonly IProxyFactory _proxyFactory = new ProxyFactory();
 
         public DapperExtensionsConfiguration()
             : this(typeof(AutoClassMapper<>), new List<Assembly>(), new SqlServerDialect())
@@ -47,6 +53,8 @@ namespace DapperExtensions
         public ISqlDialect Dialect { get; }
 
         public bool CaseSensitiveSearchEnabled { get; private set; } = false;
+        public bool EnableProxyGeneration { get; private set; } = false;
+        public IProxyFactory ProxyFactory => _proxyFactory;
 
         public IClassMapper GetMap(Type entityType)
         {
@@ -128,5 +136,7 @@ namespace DapperExtensions
         }
 
         public void SetCaseSensitiveSearch(bool value) => CaseSensitiveSearchEnabled = value;
+        
+        public void SetProxyGeneration(bool enabled) => EnableProxyGeneration = enabled;
     }
 }

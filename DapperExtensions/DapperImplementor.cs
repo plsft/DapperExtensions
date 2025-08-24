@@ -1,6 +1,7 @@
 ﻿using Dapper;
 using DapperExtensions.Mapper;
 using DapperExtensions.Predicate;
+using DapperExtensions.Proxy;
 using DapperExtensions.Sql;
 using System.Text.Json;
 using System;
@@ -26,6 +27,7 @@ namespace DapperExtensions
         void Update<T>(IDbConnection connection, IEnumerable<T> entities, IDbTransaction? transaction, int? commandTimeout, bool ignoreAllKeyProperties);
         bool UpdatePartial<TIn, TOut>(IDbConnection connection, TIn entity, Expression<Func<TIn, TOut>> func, IDbTransaction? transaction, int? commandTimeout, bool ignoreAllKeyProperties) where TIn : class;
         void UpdatePartial<TIn, TOut>(IDbConnection connection, IEnumerable<TIn> entities, Expression<Func<TIn, TOut>> func, IDbTransaction? transaction, int? commandTimeout, bool ignoreAllKeyProperties) where TIn : class;
+        bool UpdateDirty<T>(IDbConnection connection, T entity, IDbTransaction? transaction, int? commandTimeout, bool ignoreAllKeyProperties) where T : class;
         bool Delete<T>(IDbConnection connection, T entity, IDbTransaction? transaction, int? commandTimeout);
         void Delete<T>(IDbConnection connection, IEnumerable<T> entities, IDbTransaction? transaction, int? commandTimeout);
         bool Delete<T>(IDbConnection connection, object? predicate, IDbTransaction? transaction, int? commandTimeout);
@@ -113,6 +115,54 @@ namespace DapperExtensions
         {
             var cols = GetBufferedCols<TOut>();
             InternalUpdate<TIn>(connection, entities, transaction, cols, commandTimeout, ignoreAllKeyProperties);
+        }
+
+        public bool UpdateDirty<T>(IDbConnection connection, T entity, IDbTransaction? transaction, int? commandTimeout, bool ignoreAllKeyProperties = false) where T : class
+        {
+            // Check if entity is a proxy with change tracking
+            if (Configuration.ProxyFactory.IsProxy(entity))
+            {
+                var changeTracker = Configuration.ProxyFactory.GetChangeTracker(entity);
+                var dirtyProperties = changeTracker.GetDirtyProperties().ToList();
+                
+                if (!dirtyProperties.Any())
+                    return false; // Nothing to update
+                
+                // Get class mapper and create projections for dirty properties only
+                var classMap = Configuration.GetMap<T>();
+                var dirtyProjections = new List<IProjection>();
+                
+                foreach (var propertyName in dirtyProperties)
+                {
+                    var memberMap = classMap.Properties.FirstOrDefault(p => p.Name == propertyName);
+                    if (memberMap != null && !memberMap.Ignored && !memberMap.IsReadOnly)
+                    {
+                        dirtyProjections.Add(new Projection
+                        {
+                            PropertyName = memberMap.PropertyInfo.Name,
+                            ColumnName = memberMap.ColumnName,
+                            Alias = memberMap.ColumnName
+                        });
+                    }
+                }
+                
+                if (!dirtyProjections.Any())
+                    return false; // No updatable properties were dirty
+                
+                var result = InternalUpdate(connection, entity, transaction, dirtyProjections, commandTimeout, ignoreAllKeyProperties);
+                
+                if (result)
+                {
+                    changeTracker.MarkAsClean();
+                }
+                
+                return result;
+            }
+            else
+            {
+                // Fallback to normal update for non-proxy entities
+                return Update(connection, entity, transaction, commandTimeout, ignoreAllKeyProperties);
+            }
         }
 
         public bool Delete<T>(IDbConnection connection, T entity, IDbTransaction? transaction, int? commandTimeout)
@@ -447,9 +497,30 @@ namespace DapperExtensions
 
         protected IEnumerable<T> MappColumns<T>(IEnumerable<dynamic> values)
         {
-            // Hierarchical mapping is not supported without Slapper.AutoMapper
-            // Return empty collection for now
-            return Enumerable.Empty<T>();
+            // For now, just convert dynamic to T using standard mapping
+            // This allows the regular Dapper mapping to work
+            var results = values.Cast<T>().ToList();
+            
+            // If proxy generation is enabled, wrap entities in proxies
+            if (Configuration.EnableProxyGeneration)
+            {
+                var proxiedResults = new List<T>();
+                foreach (var result in results)
+                {
+                    if (result != null && result is T entity)
+                    {
+                        var proxy = Configuration.ProxyFactory.CreateProxy<T>(entity);
+                        proxiedResults.Add(proxy);
+                    }
+                    else
+                    {
+                        proxiedResults.Add(result);
+                    }
+                }
+                return proxiedResults;
+            }
+            
+            return results;
         }
 
         protected static DynamicParameters GetDynamicParameters(Dictionary<string, object> parameters)

@@ -1,5 +1,6 @@
 ﻿using DapperExtensions.Mapper;
 using DapperExtensions.Predicate;
+using DapperExtensions.Proxy;
 using DapperExtensions.Sql;
 using System;
 using System.Collections.Generic;
@@ -7,6 +8,8 @@ using System.Data;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace DapperExtensions
@@ -370,6 +373,154 @@ namespace DapperExtensions
         public static async Task<IClassMapper> GetMap<T>()
         {
             return await Task.FromResult(_configuration.GetMap<T>());
+        }
+
+        /// <summary>
+        /// Executes an update query for the specified entity using dirty tracking if it's a proxy.
+        /// </summary>
+        public static Task<bool> UpdateDirtyAsync<T>(this IDbConnection connection, T entity, IDbTransaction transaction = null,
+            int? commandTimeout = null, bool ignoreAllKeyProperties = false) where T : class
+        {
+            return Instance.UpdateDirtyAsync(connection, entity, transaction, commandTimeout, ignoreAllKeyProperties);
+        }
+
+        /// <summary>
+        /// Executes update operations for each entity in the async enumerable stream.
+        /// </summary>
+        public static async Task<int> UpdateAsync<T>(this IDbConnection connection, IAsyncEnumerable<T> entities, 
+            IDbTransaction transaction = null, int? commandTimeout = null, bool ignoreAllKeyProperties = false, 
+            CancellationToken cancellationToken = default) where T : class
+        {
+            var count = 0;
+            await foreach (var entity in entities.WithCancellation(cancellationToken))
+            {
+                if (await connection.UpdateAsync(entity, transaction, commandTimeout, ignoreAllKeyProperties))
+                {
+                    count++;
+                }
+            }
+            return count;
+        }
+
+        /// <summary>
+        /// Executes update operations for dirty properties only for each proxy entity in the async enumerable stream.
+        /// </summary>
+        public static async Task<int> UpdateDirtyAsync<T>(this IDbConnection connection, IAsyncEnumerable<T> entities,
+            IDbTransaction transaction = null, int? commandTimeout = null, bool ignoreAllKeyProperties = false,
+            CancellationToken cancellationToken = default) where T : class
+        {
+            var count = 0;
+            await foreach (var entity in entities.WithCancellation(cancellationToken))
+            {
+                if (_configuration.ProxyFactory.IsProxy(entity))
+                {
+                    if (await Instance.UpdateDirtyAsync(connection, entity, transaction, commandTimeout, ignoreAllKeyProperties))
+                    {
+                        count++;
+                    }
+                }
+                else
+                {
+                    // Fallback to regular update for non-proxy entities
+                    if (await connection.UpdateAsync(entity, transaction, commandTimeout, ignoreAllKeyProperties))
+                    {
+                        count++;
+                    }
+                }
+            }
+            return count;
+        }
+
+        /// <summary>
+        /// Executes insert operations for each entity in the async enumerable stream.
+        /// </summary>
+        public static async Task<int> InsertAsync<T>(this IDbConnection connection, IAsyncEnumerable<T> entities,
+            IDbTransaction transaction = null, int? commandTimeout = null, CancellationToken cancellationToken = default)
+            where T : class
+        {
+            var count = 0;
+            await foreach (var entity in entities.WithCancellation(cancellationToken))
+            {
+                await connection.InsertAsync(entity, transaction, commandTimeout);
+                count++;
+            }
+            return count;
+        }
+
+        /// <summary>
+        /// Executes delete operations for each entity in the async enumerable stream.
+        /// </summary>
+        public static async Task<int> DeleteAsync<T>(this IDbConnection connection, IAsyncEnumerable<T> entities,
+            IDbTransaction transaction = null, int? commandTimeout = null, CancellationToken cancellationToken = default)
+            where T : class
+        {
+            var count = 0;
+            await foreach (var entity in entities.WithCancellation(cancellationToken))
+            {
+                if (await connection.DeleteAsync(entity, transaction, commandTimeout))
+                {
+                    count++;
+                }
+            }
+            return count;
+        }
+
+        /// <summary>
+        /// Processes entities from an async enumerable stream in batches.
+        /// </summary>
+        public static async IAsyncEnumerable<IList<T>> BatchAsync<T>(this IAsyncEnumerable<T> source, int batchSize,
+            [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            var batch = new List<T>(batchSize);
+
+            await foreach (var item in source.WithCancellation(cancellationToken))
+            {
+                batch.Add(item);
+
+                if (batch.Count >= batchSize)
+                {
+                    yield return batch;
+                    batch = new List<T>(batchSize);
+                }
+            }
+
+            if (batch.Count > 0)
+            {
+                yield return batch;
+            }
+        }
+
+        /// <summary>
+        /// Executes batch updates for entities with dirty tracking support.
+        /// </summary>
+        public static async Task<int> UpdateDirtyBatchAsync<T>(this IDbConnection connection, IAsyncEnumerable<T> entities,
+            int batchSize = 100, IDbTransaction transaction = null, int? commandTimeout = null, 
+            bool ignoreAllKeyProperties = false, CancellationToken cancellationToken = default) where T : class
+        {
+            var totalCount = 0;
+
+            await foreach (var batch in entities.BatchAsync(batchSize, cancellationToken))
+            {
+                foreach (var entity in batch)
+                {
+                    if (_configuration.ProxyFactory.IsProxy(entity))
+                    {
+                        if (await Instance.UpdateDirtyAsync(connection, entity, transaction, commandTimeout, ignoreAllKeyProperties))
+                        {
+                            totalCount++;
+                        }
+                    }
+                    else
+                    {
+                        if (await connection.UpdateAsync(entity, transaction, commandTimeout, ignoreAllKeyProperties))
+                        {
+                            totalCount++;
+                        }
+                    }
+                }
+            }
+
+            return totalCount;
         }
     }
 }
