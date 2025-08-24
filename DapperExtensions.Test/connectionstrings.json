@@ -1,5 +1,6 @@
 {
 	"MySql": "Server=localhost;Database=dapperTest;Uid=dapperExtensions;Pwd=password;",
+    "Postgres": "Server=localhost;Database=dapperTest;Uid=dapperExtensions;Pwd=password;",
 	"SqlServer": "Data Source=localhost;Initial Catalog=dapper;Persist Security Info=True;User ID=dapperExtensions;Password=p@ssw0rd",
 	"SqlServerDBA": "Data Source=localhost;Persist Security Info=True;User ID=sa;Password=D4pp3rExt3ns1ons",
 	"Oracle": "Data Source=localhost:1521/xe; User Id=xe; Password=xe;",
